@@ -2,8 +2,8 @@ import streamlit as st
 import pickle
 import numpy as np
 
-ridge_model = pickle.load(open('C:/Data/dataScience/ALGERIA_PROJECT/models/ridge.pkl', 'rb'))
-standard_scaler = pickle.load(open('C:/Data/dataScience/ALGERIA_PROJECT/models/scaler.pkl', 'rb'))
+ridge_model = pickle.load(open('models/ridge.pkl', 'rb'))
+standard_scaler = pickle.load(open('models/scaler.pkl', 'rb'))
 
 st.title("🔥 :green[Algerian Forest Fire Weather Index Prediction]")
 
