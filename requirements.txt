@@ -1,4 +1,4 @@
 streamlit
 numpy
-sickit-learn
+scikit-learn
 pickle
