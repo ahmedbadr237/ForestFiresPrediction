@@ -1,40 +1,42 @@
-from flask import Flask,request,jsonify,render_template
+import streamlit as st
 import pickle
 import numpy as np
-import pandas as pd
-from sklearn.preprocessing import StandardScaler
 
-application = Flask(__name__)
-app = application
+ridge_model = pickle.load(open('C:/Data/dataScience/ALGERIA_PROJECT/models/ridge.pkl', 'rb'))
+standard_scaler = pickle.load(open('C:/Data/dataScience/ALGERIA_PROJECT/models/scaler.pkl', 'rb'))
 
-## import lassocv and standard scaler.
-lassocv_model = pickle.load(open('C:\Data\dataScience\ALGERIA_PROJECT\models\lassocv.pkl','rb'))
-standard_scaler = pickle.load(open('C:\Data\dataScience\ALGERIA_PROJECT\models\scaler.pkl','rb'))
+st.title("🔥 :green[Algerian Forest Fire Weather Index Prediction]")
 
+st.write(":green[Enter the weather conditions to predict the Fire Weather Index (FWI).]")
 
+temperature = st.number_input("🌡️ :red[Temperature (°C)]", min_value=-10.0, max_value=50.0, value=25.0,)
+humidity = st.number_input("💧 :red[RH (Relative Humidity %)]", min_value=0.0, max_value=100.0, value=50.0)
+wind_speed = st.number_input("💨 :red[Wind Speed (km/h)]", min_value=0.0, max_value=100.0, value=10.0)
+rain = st.number_input("🌧️ :red[Rainfall (mm)]", min_value=0.0, max_value=100.0, value=0.0)
+ffmc = st.number_input("🔥 :red[FFMC (Fine Fuel Moisture Code)]", min_value=0.0, max_value=100.0, value=85.0)
+dmc = st.number_input("🌿 :red[DMC (Duff Moisture Code)]", min_value=0.0, max_value=100.0, value=50.0)
+isi = st.number_input("🔥 :red[ISI (Initial Spread Index)]", min_value=0.0, max_value=50.0, value=5.0)
+region = st.selectbox("📍 :red[Region (0 : Bejaia , 1 : Sidi-Bel Abbes)]", [0, 1])
 
-@app.route("/")
-def index():
-    return render_template('index.html')
-
-@app.route('/predict', methods=['POST'])
-def predict():
-    # Get values from form input
+st.markdown(
+    """
+    <style>
+    .stApp {
+        background-image: url("https://images.unsplash.com/photo-1627162319041-ba11296b64c9?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D");
+        background-size: cover;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+if st.button("Predict FWI"):
     try:
-        input_features = [float(request.form[key]) for key in ["Temperature", "RH", "Ws", "Rain", 
-                                                               "FFMC", "DMC","ISI", 
-                                                               "Classes", "Region"]]
         
-        # Convert to NumPy array and reshape for prediction
-        input_array = np.array(input_features).reshape(1, -1)
-        new_scaled_data = standard_scaler.transform(input_array)
-        # Predict FWI
-        predicted_fwi = lassocv_model.predict(new_scaled_data)[0]
-
-        return render_template('index.html', prediction=f"Predicted Fire Weather Index (FWI): {predicted_fwi:.2f}")
+        input_features = np.array([[temperature, humidity, wind_speed, rain, ffmc, dmc, isi, region]])
+        scaled_data = standard_scaler.transform(input_features)
+        predicted_fwi = ridge_model.predict(scaled_data)[0]
+        
+        st.title(f"🔥 :green[Predicted Fire Weather Index (FWI)]: :green[({predicted_fwi:.2f})]")
 
     except Exception as e:
-        return render_template('index.html', prediction=f"Error: {str(e)}")
-
-if __name__ =="__main__":
-    app.run(debug=True,host='0.0.0.0')
+        st.error(f"Error: {str(e)}")
